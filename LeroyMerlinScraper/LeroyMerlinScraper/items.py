@@ -41,8 +41,9 @@ def get_full_price(price_parts_list: list):
 
 class LeroyMerlinScraperItem(scrapy.Item):
     url = scrapy.Field(output_processor=TakeFirst())
-    name = scrapy.Field(input_processors=Compose(normalize_name), output_processor=TakeFirst())
-    specifications = scrapy.Field(input_processors=Compose(get_table_from_list))
+    name = scrapy.Field(input_processor=MapCompose(normalize_name), output_processor=TakeFirst())
+    specifications = scrapy.Field(input_processor=Compose(get_table_from_list))
     small_images = scrapy.Field()
-    big_images = scrapy.Field(input_processors=MapCompose(get_big_images_urls))
-    price = scrapy.Field(input_processors=MapCompose(get_full_price), output_processors=TakeFirst())
+    big_images = scrapy.Field(input_processor=MapCompose(get_big_images_urls))
+    price = scrapy.Field(input_processor=Compose(get_full_price), output_processor=TakeFirst())
+    img_info = scrapy.Field()
