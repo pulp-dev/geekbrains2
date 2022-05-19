@@ -1,9 +1,8 @@
 import scrapy
-from scrapy import Request
 from scrapy.http import TextResponse
+from scrapy.loader import ItemLoader
 
-
-# from LeroyMerlinScraper.LeroyMerlinScraper.items import
+from LeroyMerlinScraper.items import LeroyMerlinScraperItem
 
 
 class LeroyMerlinSpider(scrapy.Spider):
@@ -27,29 +26,25 @@ class LeroyMerlinSpider(scrapy.Spider):
         print('PARSE ITEM')
         # name
         name_xpath = '//h1[@itemprop="name"]/text()'
-        name = response.xpath(name_xpath).get()
 
         # specifications
-        table_xpath = "//ul[@class='specification']//li"
-        table = response.xpath(table_xpath)
-        specifications = {}
-        for cell in table:
-            label = cell.xpath('.//div//text()')
-            specifications[label.getall()[0].replace(' ', '').replace('\n', '')] = \
-                label.getall()[1].replace(' ', '').replace('\n', '')
-            print()
+        table_xpath = "//ul[@class='specification']//li//div//text()"
 
         # images
         small_imges_xpath = "//ul[@class='row']//img/@src"
-        re_imges = response.xpath(small_imges_xpath).getall()
-        big_imges = []
-        for img in re_imges:
-            big_imges.append(img.replace('/500/500', '/2000/2000'))
 
         # price
-        price_xpath = "//div[@id='store-stock']//div[@class='product_price']"
-        price = response.xpath(price_xpath + '/text()').get().replace(' ', '').replace('\n', '').replace(',', '.') + \
-                response.xpath(price_xpath + '/sub/text()').get().replace(' ', '').replace('\n', '')
-        price = float(price)
+        price_xpath = "//div[@id='store-stock']//div[@class='product_price']//text()"
+
+        loader = ItemLoader(item=LeroyMerlinScraperItem(), response=response)
+
+        loader.add_value("url", response.url)
+        loader.add_xpath("name", name_xpath)
+        loader.add_xpath("specifications", table_xpath)
+        loader.add_xpath("small_images", small_imges_xpath)
+        loader.add_xpath("big_images", small_imges_xpath)
+        loader.add_xpath("price", price_xpath)
 
         print()
+
+        yield loader.load_item()
